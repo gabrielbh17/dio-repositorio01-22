@@ -1,0 +1,134 @@
+### **Chatbot de Atendimento ao Cliente com AWS Step Functions, Amazon Bedrock e DynamoDB**
+
+---
+
+#### **Visão Geral**
+Este projeto propõe uma solução para automatizar o atendimento ao cliente, utilizando serviços da AWS para criar um chatbot integrado com inteligência artificial. A solução permite gerenciar chamados de forma eficiente, respondendo de forma personalizada e escalável.
+
+---
+
+#### **Cenário Atual**
+- **Desafio**: Uma empresa enfrenta um alto volume de chamados de suporte ao cliente via site. As mensagens são armazenadas em uma tabela no Amazon DynamoDB, mas o atendimento manual é lento e consome muitos recursos.
+- **Impacto**: O tempo de resposta aos clientes é alto, reduzindo a satisfação do cliente e sobrecarregando a equipe de suporte.
+
+---
+
+#### **Solução Proposta**
+Desenvolver um **chatbot inteligente** que:
+1. **Leia os chamados no DynamoDB**: Extrai os dados diretamente da tabela onde os chamados estão armazenados.
+2. **Use o Amazon Bedrock para processamento**: Gera respostas personalizadas usando modelos de linguagem avançados.
+3. **Mantenha um histórico de conversa**: Permite contextualizar respostas baseando-se em interações anteriores.
+4. **Gerencie o histórico de forma eficiente**: Trunca dados quando necessário para evitar limitações técnicas.
+5. **Orquestre com AWS Step Functions**: Organiza e escala o fluxo de trabalho automaticamente.
+
+---
+
+#### **Benefícios da Solução**
+- **Automação**: Reduz a dependência de suporte humano, agilizando o atendimento.
+- **Respostas Inteligentes**: Responde com maior precisão e contexto.
+- **Escalabilidade**: Lida com altos volumes de chamados sem perda de desempenho.
+- **Eficiência**: Libera a equipe para questões mais críticas.
+
+---
+
+#### **Fluxo de Trabalho**
+**Fases do Processo:**
+
+1. **Inicialização**:
+   - Obtém a lista de IDs dos chamados no DynamoDB.
+   - Inicializa o histórico de conversa como vazio.
+
+2. **Processamento em Loop**:
+   - Para cada chamado:
+     - Lê o conteúdo no DynamoDB.
+     - Atualiza o histórico da conversa com o chamado atual.
+     - Trunca o histórico, se necessário.
+     - Envia o histórico ao modelo do Amazon Bedrock para gerar uma resposta.
+     - Adiciona a resposta ao histórico e o trunca novamente.
+     - Remove o chamado processado da lista.
+
+3. **Finalização**:
+   - Quando todos os chamados forem processados, o fluxo é encerrado.
+
+---
+
+#### **Etapas do Fluxo**
+1. **Obter IDs dos Chamados**:
+   - Invoca uma função Lambda que retorna uma lista de IDs, com o indicador "DONE" para fim da lista.
+
+2. **Inicializar Histórico**:
+   - Cria uma variável para armazenar o histórico de conversa, inicialmente vazio.
+
+3. **Verificar Condição do Loop**:
+   - Se houver mais IDs a serem processados, continua o fluxo; caso contrário, finaliza.
+
+4. **Ler Mensagem do DynamoDB**:
+   - Obtém o conteúdo do chamado utilizando o `MessageId`.
+
+5. **Atualizar Histórico com Mensagem**:
+   - Concatena o chamado atual ao histórico existente.
+
+6. **Truncar Histórico**:
+   - Usa uma função Lambda para manter o histórico dentro de um limite definido (ex.: 2000 caracteres).
+
+7. **Invocar Modelo de IA**:
+   - Envia o histórico ao Amazon Bedrock, gerando uma resposta baseada no contexto.
+
+8. **Atualizar Histórico com Resposta**:
+   - Adiciona a resposta ao histórico e realiza novo truncamento, se necessário.
+
+9. **Remover Chamado da Lista**:
+   - Exclui o chamado processado da lista.
+
+10. **Encerrar Fluxo**:
+    - Marca o processo como concluído.
+
+---
+
+#### **Implementação Técnica**
+- **Amazon DynamoDB**:
+  - Tabela para armazenar os chamados recebidos.
+
+- **Funções Lambda**:
+  - **Obter IDs**: Recupera a lista de IDs dos chamados.
+  - **Truncar Histórico**: Gerencia o tamanho do histórico de conversa.
+
+- **Amazon Bedrock**:
+  - Modelo de linguagem para gerar respostas inteligentes.
+
+- **AWS Step Functions**:
+  - Orquestra o fluxo de trabalho em estados definidos.
+
+---
+
+#### **Benefícios Operacionais**
+- **Automação Completa**: Respostas rápidas e sem intervenção humana.
+- **Aumento da Satisfação do Cliente**: Respostas personalizadas e detalhadas.
+- **Redução de Custos**: Diminui a necessidade de uma equipe de suporte robusta.
+- **Alta Escalabilidade**: Suporte simultâneo para grandes volumes de chamados.
+
+---
+
+#### **Como Implementar**
+1. **Configurar DynamoDB**:
+   - Criar a tabela para armazenar os chamados dos clientes.
+
+2. **Desenvolver Funções Lambda**:
+   - Implementar funções para gerenciar IDs e truncamento do histórico.
+
+3. **Configurar Amazon Bedrock**:
+   - Escolher e configurar um modelo de linguagem adequado.
+
+4. **Criar a Máquina de Estados no AWS Step Functions**:
+   - Utilizar o JSON fornecido para definir o fluxo.
+
+5. **Testar a Solução**:
+   - Simular chamados para validar o funcionamento.
+
+6. **Monitorar e Ajustar**:
+   - Utilizar ferramentas da AWS para monitorar desempenho e ajustar parâmetros.
+
+---
+
+#### **Conclusão**
+A solução proposta automatiza o atendimento ao cliente, melhorando a eficiência e aumentando a satisfação dos clientes. A integração entre AWS Step Functions, Amazon Bedrock e DynamoDB cria um chatbot escalável, eficiente e fácil de gerenciar, liberando recursos para tarefas mais estratégicas.
